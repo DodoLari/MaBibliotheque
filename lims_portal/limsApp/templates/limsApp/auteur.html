@@ -1,0 +1,146 @@
+{% extends "limsApp/base.html" %}
+
+
+{% block body %}
+<div>
+  <!-- Bouton pour ouvrir la modale -->
+  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#formModal">
+    Ajouter
+  </button>
+
+  <!-- Fenêtre modale -->
+  <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="formModalLabel">Formulaire de contact</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="POST">
+  {% csrf_token %}
+  <div class="form-group mb-3">
+    <label for="{{ form.nom_aut.id_for_label }}" class="form-label">Nom de l'auteur</label>
+    {{ form.nom_aut}}
+  </div>
+  <div class="form-group mb-3">
+    <label for="{{ form.prenom_aut.id_for_label }}" class="form-label">Prénom de l'auteur</label>
+    {{ form.prenom_aut }}
+  </div>
+  <div class="form-group mb-3">
+    <label for="{{ form.adr_aut.id_for_label }}" class="form-label">Adresse</label>
+    {{ form.adr_aut }}
+  </div>
+  <button type="submit" class="btn btn-primary">Envoyer</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+</form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table des auteurs -->
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Nom</th>
+      <th scope="col">Prénom</th>
+      <th scope="col">Adresse</th>
+      <th scope="col">Nombre de livres</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for auteur in auteurs %}
+      <tr>
+        <th scope="row">{{ auteur.id }}</th>
+        <td>{{ auteur.nom_aut }}</td>
+        <td>{{ auteur.prenom_aut }}</td>
+        <td>{{ auteur.adr_aut }}</td>
+        <td>{{ auteur.nombre_de_livres }}</td>
+        <td>
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#editModal{{ auteur.id }}">
+      Modifier
+    </button>
+
+    <!-- Fenêtre modale de modification -->
+    <div class="modal fade" id="editModal{{ auteur.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel">Modifier l'auteur {{ auteur.nom_aut }} {{ auteur.prenom_aut }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Formulaire de modification -->
+            <form method="POST" action="{% url 'limsApp:edit_author' auteur.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="id" value="{{ auteur.id }}"/> <!-- ID caché pour identifier l'auteur -->
+
+              <!-- Champs pré-remplis avec les données de l'auteur -->
+              <div class="form-group mb-3">
+                <label for="nom_aut">Nom</label>
+                <input type="text" class="form-control" id="nom_aut" name="nom_aut" value="{{ auteur.nom_aut }}" required>
+              </div>
+              <div class="form-group mb-3">
+                <label for="prenom_aut">Prénom</label>
+                <input type="text" class="form-control" id="prenom_aut" name="prenom_aut" value="{{ auteur.prenom_aut }}" required>
+              </div>
+              <div class="form-group mb-3">
+                <label for="adr_aut">Adresse</label>
+                <input class="form-control" id="adr_aut" name="adr_aut" value="{{ auteur.adr_aut }}" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#removeModal{{ auteur.id }}">
+    Supprimer
+</button>
+
+<!-- Fenêtre modale de confirmation de suppression -->
+<div class="modal fade" id="removeModal{{ auteur.id }}" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="removeModalLabel">Supprimer l'auteur {{ auteur.nom_aut|add:" " }}{{ auteur.prenom_aut }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer cet auteur ? Cette action est irréversible.
+
+        <!-- Formulaire de suppression avec méthode POST -->
+        <form method="POST" action="{% url 'limsApp:delete_author' auteur.id %}" class="mt-3">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block title %}
+  <title>Auteur</title>
+{% endblock %}
+
